@@ -1,0 +1,42 @@
+name: Peers.TV Playlist Auto-Updater
+
+on:
+  schedule:
+    # Запускать каждые 3 часа (UTC время = МСК-3)
+    - cron: '0 */3 * * *'
+  workflow_dispatch: # Возможность запустить вручную
+
+jobs:
+  update-playlist:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 🔄 Запуск обновления плейлиста
+        run: |
+          # Конфигурация
+          URL="https://Tipicon80.pythonanywhere.com/update_playlist"
+          SECRET_KEY="kP7%24mN9%40qR2%21sT5%23uV8%25xY3%26zB6%2AaC1%5EdE4"  # URL-encoded версия ключа
+          FULL_URL="${URL}?key=${SECRET_KEY}"
+          
+          echo "⏰ $(date) - Запуск автоматического обновления"
+          echo "🔗 URL: $FULL_URL"
+          
+          # Делаем запрос с таймаутом 60 секунд
+          response=$(curl -s -m 60 -w "\n%{http_code}" "$FULL_URL")
+          status_code=$(echo "$response" | tail -n1)
+          body=$(echo "$response" | sed '$d')
+          
+          echo "📄 Ответ сервера:"
+          echo "$body"
+          echo "🔢 HTTP статус: $status_code"
+          
+          # Проверяем результат
+          if [[ "$status_code" == "200" && "$body" == *"успешно обновлено"* ]]; then
+            echo "✅✅✅ ОБНОВЛЕНИЕ УСПЕШНО ЗАВЕРШЕНО! ✅✅✅"
+            exit 0
+          else
+            echo "❌❌❌ ОШИБКА ОБНОВЛЕНИЯ! ❌❌❌"
+            echo "Ответ сервера: $body"
+            exit 1
+          fi
+        env:
+          TZ: Europe/Moscow
