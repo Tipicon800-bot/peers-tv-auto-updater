@@ -1,4 +1,4 @@
-name: Simple Updater
+name: Peers.TV Fix Key Updater
 
 on:
   schedule:
@@ -6,10 +6,32 @@ on:
   workflow_dispatch:
 
 jobs:
-  simple-update:
+  fix-update:
     runs-on: ubuntu-latest
     steps:
-      - name: 🔄 Минимальный запрос
+      - name: 🔑 ИСПРАВЛЕНИЕ: Используем правильный URL-encoded ключ
         run: |
-          curl -s "https://Tipicon80.pythonanywhere.com/update_playlist?key=kP7%24mN9%40qR2%21sT5%23uV8%25xY3%26zB6%2AaC1%5EdE4"
-          echo "✅ Выполнено"
+          URL="https://Tipicon80.pythonanywhere.com/update_playlist"
+          # ПРАВИЛЬНЫЙ URL-encoded ключ (никаких переменных!)
+          FULL_URL="${URL}?key=kP7%24mN9%40qR2%21sT5%23uV8%25xY3%26zB6%2AaC1%5EdE4"
+          
+          echo "🔧 $(date) - ИСПРАВЛЕНИЕ КЛЮЧА"
+          echo "✅ ИСПОЛЬЗУЕМ ПРОВЕРЕННЫЙ КЛЮЧ БЕЗ ПЕРЕМЕННЫХ"
+          echo "🔗 URL: $FULL_URL"
+          
+          # Делаем запрос
+          response=$(curl -s -m 60 "$FULL_URL")
+          echo "📄 Ответ сервера:"
+          echo "$response"
+          
+          # Проверяем успех
+          if [[ "$response" == *"успешно обновлено"* ]]; then
+            echo "✅✅✅ ИСПРАВЛЕНО! КЛЮЧ РАБОТАЕТ! ✅✅✅"
+            exit 0
+          else
+            echo "❌❌❌ ОШИБКА: ключ всё еще неверный ❌❌❌"
+            echo "💡 СОВЕТ: скопируйте URL ВРУЧНУЮ из этого лога и проверьте в браузере"
+            exit 1
+          fi
+        env:
+          TZ: Europe/Moscow
