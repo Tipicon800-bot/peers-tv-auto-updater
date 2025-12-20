@@ -1,34 +1,32 @@
-name: Peers.TV Auto Update
-
+name: Update IPTV Playlist
 on:
-  workflow_dispatch:
   schedule:
     - cron: '0 */3 * * *'
-
+  workflow_dispatch:
 jobs:
   update:
     runs-on: ubuntu-latest
     steps:
-      - name: 🔄 Надежное обновление
-        run: |
-          echo "⏰ $(date) - Запуск обновления"
-          echo "🔗 URL: https://Tipicon80.pythonanywhere.com/update_playlist?key=kP7%24mN9%40qR2%21sT5%23uV8%25xY3%26zB6%2AaC1%5EdE4"
-          
-          # Пробуем 3 раза с задержкой
-          for i in {1..3}; do
-            echo "🔄 Попытка $i..."
-            response=$(curl -s -m 60 "https://Tipicon80.pythonanywhere.com/update_playlist?key=kP7%24mN9%40qR2%21sT5%23uV8%25xY3%26zB6%2AaC1%5EdE4")
-            echo "📄 Ответ: $response"
-            
-            if [[ "$response" == *"успешно обновлено"* ]]; then
-              echo "✅✅✅ УСПЕХ! ✅✅✅"
-              exit 0
-            fi
-            
-            sleep 10
-          done
-          
-          echo "❌❌❌ ВСЕ ПОПЫТКИ ПРОВАЛИЛИСЬ ❌❌❌"
-          exit 1
+      - name: Вызов обновления на PythonAnywhere
         env:
-          TZ: Europe/Moscow
+          # ВНИМАНИЕ: В настройках репозитория GitHub создайте секрет
+          # с именем PLAYLIST_SECRET_KEY и значением kP7$mN9@qR2!sT5#uV8%xY3&zB6*aC1^dE4
+          SECRET_KEY: ${{ secrets.PLAYLIST_SECRET_KEY }}
+          PYTHONANYWHERE_URL: 'https://tipicon80.pythonanywhere.com'
+        run: |
+          # Ключ передается как часть URL, поэтому специальные символы должны быть закодированы.
+          # Вместо ручного кодирования, curl сделает это сам, если передать ключ в переменной.
+          FULL_URL="$PYTHONANYWHERE_URL/update?key=$SECRET_KEY"
+          echo "Вызываю URL для обновления..."
+
+          response=$(curl -s -w "\n%{http_code}" "$FULL_URL")
+          http_code=$(echo "$response" | tail -n1)
+          response_body=$(echo "$response" | sed '$d')
+
+          echo "Статус HTTP: $http_code"
+          echo "Ответ сервера: $response_body"
+
+          if [ "$http_code" -ne 200 ]; then
+            echo "Ошибка: не удалось обновить плейлист"
+            exit 1
+          fi
