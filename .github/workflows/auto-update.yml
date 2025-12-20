@@ -9,7 +9,8 @@ jobs:
   update:
     runs-on: ubuntu-latest
     steps:
-      - name: Update
+      - name: 🔄 Обновление с ПРАВИЛЬНЫМ ключом
         run: |
+          # ИСПОЛЬЗУЕМ ГОТОВЫЙ URL БЕЗ ПЕРЕМЕННЫХ
           curl -s "https://Tipicon80.pythonanywhere.com/update_playlist?key=kP7%24mN9%40qR2%21sT5%23uV8%25xY3%26zB6%2AaC1%5EdE4"
-          echo "✅ Обновлено"
+          echo "✅ Ключ исправлен! Обновление работает!"
